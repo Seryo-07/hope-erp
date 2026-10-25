@@ -1,9 +1,9 @@
 # Sprint 1 Board: HOPE, Inc. ERP
 
-**Task:** S1-SM-02 · **Owner:** Scrum Master · **Due:** Sprint day 1
-**Sprint 1:** weeks 1-2 (sprint days 1-10, counted as calendar days) · **Start date:** Sat Oct 24, 2026 (agreed by the team) · **End date:** Mon Nov 2, 2026
-**Stack:** React (client) · Node.js (server) · Supabase (database)
-**Team:** Brean Shein I. Ibañez (Developer) · Mark Angel D. Tugade (DB Admin) · Jhadenn Cypher (Tester) · Jian Dominic Delos Reyes (UI/UX Designer) · Eraño A. Lomibao (Scrum Master)
+- **Task:** S1-SM-02 · **Owner:** Scrum Master · **Due:** Sprint day 1
+- **Sprint 1:** weeks 1-2 (sprint days 1-10, counted as calendar days) · **Start date:** Sat Oct 24, 2026 (agreed by the team) · **End date:** Mon Nov 2, 2026
+- **Stack:** React (client) · Node.js (server) · Supabase (database)
+- **Team:** Brean Shein I. Ibañez (Developer) · Mark Angel D. Tugade (DB Admin) · Jhadenn Cypher (Tester) · Jian Dominic Delos Reyes (UI/UX Designer) · Eraño A. Lomibao (Scrum Master)
 
 ## Sprint 1 calendar (day 1 = Oct 24, agreed by the team)
 
