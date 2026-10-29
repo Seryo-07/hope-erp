@@ -1,0 +1,10 @@
+{
+  "devDependencies": {
+    "supabase": "^2.122.0"
+  },
+  "scripts": {
+    "db:new": "supabase migration new",
+    "db:push": "supabase db push",
+    "db:status": "supabase migration list --linked"
+  }
+}
