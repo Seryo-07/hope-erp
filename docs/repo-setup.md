@@ -40,7 +40,7 @@ Team members are invited with Write access (Settings → Collaborators). Each pe
 
 | Name | Role | GitHub username |
 |---|---|---|
-| Erano A. Lomibao | Scrum Master |Seryo-07|
+| Eraño A. Lomibao | Scrum Master |Seryo-07|
 | Brean Shein I. Ibañez | Developer |brnshl|
 | Mark Angel D. Tugade | DB Admin |markdtugade-cloud|
 | Jhadenn Cypher | Tester |Cypher-27J|
