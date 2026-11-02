@@ -1,46 +1,53 @@
-router.post('/register', async (req, res) => {
-    const { full_name, email, password } = req.body;
+const express = require('express');
+const router = express.Router();
+const supabase = require('../config/supabase');
 
-    if (!full_name || !email || !password) {
+router.post('/register', async (req, res) => {
+    let { email, password, full_name } = req.body;
+
+    if (!email || !password || !full_name) {
         return res.status(400).json({ error: 'All fields are required.' });
     }
 
+    email = email.trim().toLowerCase();
+
     try {
 
-        const { data: authData, error: authError } = await supabase.auth.signUp({
-            email,
-            password,
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: { full_name: full_name },
         });
 
-        if (authError) {
-            return res.status(400).json({ error: authError.message });
-        }
+        if (authError) throw authError;
 
+        const userId = authData.user?.id;
+        if (!userId) throw new Error('User creation failed.');
 
-        if (!authData.user) {
-            return res.status(400).json({ error: 'Failed to create authentication user.' });
-        }
-
-        const { data: profileData, error: profileError } = await supabase
+        const { error: profileError } = await supabase
             .from('app_user')
             .insert([
                 {
-                    id: authData.user.id,
-                    full_name,
-                    email,
+                    id: userId,
+                    full_name: full_name,
+                    email: email,
                     status: 'pending',
                 },
             ]);
 
         if (profileError) {
-            return res.status(400).json({ error: profileError.message });
+            await supabase.auth.admin.deleteUser(userId);
+            throw profileError;
         }
 
         return res.status(201).json({
-            message: 'Registration successful!',
-            user: authData.user,
+            message: 'Registration successful! Status set to pending approval.',
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error during registration.' });
+        console.error('Registration Error:', err.message);
+        return res.status(400).json({ error: err.message });
     }
 });
+
+module.exports = router;

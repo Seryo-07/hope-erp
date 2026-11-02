@@ -1,3 +1,8 @@
+# Environment variables (CRITICAL)
+.env
+.env.*
+!.env.example
+
 # Logs
 logs
 *.log

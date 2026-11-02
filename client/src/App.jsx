@@ -30,7 +30,8 @@ export default function App() {
     try {
       setLoading(true);
 
-      const response = await fetch('/api/auth/register', {
+      // Targeted express backend on port 5000 directly
+      const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -52,7 +53,8 @@ export default function App() {
       }
 
       if (!response.ok) {
-        throw new Error(data.message || `Registration failed with status ${response.status}`);
+        // Fallback to data.error to match express error payloads
+        throw new Error(data.error || data.message || `Registration failed with status ${response.status}`);
       }
 
       setMessage(data.message);
@@ -66,9 +68,9 @@ export default function App() {
 
   return (
       <div style={{ maxWidth: '400px', margin: '40px auto', fontFamily: 'sans-serif' }}>
-        <h2>User Registration</h2>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {message && <p style={{ color: 'green' }}>{message}</p>}
+        <h2>HOPE ERP - User Registration</h2>
+        {error && <p style={{ color: 'red', backgroundColor: '#ffe6e6', padding: '10px', borderRadius: '4px' }}>{error}</p>}
+        {message && <p style={{ color: 'green', backgroundColor: '#e6ffe6', padding: '10px', borderRadius: '4px' }}>{message}</p>}
 
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div>
@@ -78,7 +80,7 @@ export default function App() {
                 name="full_name"
                 value={formData.full_name}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                 required
             />
           </div>
@@ -89,7 +91,7 @@ export default function App() {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                 required
             />
           </div>
@@ -100,7 +102,7 @@ export default function App() {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                 required
             />
           </div>
@@ -111,12 +113,12 @@ export default function App() {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                style={{ width: '100%', padding: '8px' }}
+                style={{ width: '100%', padding: '8px', boxSizing: 'border-box' }}
                 required
             />
           </div>
-          <button type="submit" disabled={loading} style={{ padding: '10px', cursor: 'pointer' }}>
-            {loading ? 'Submitting...' : 'Register'}
+          <button type="submit" disabled={loading} style={{ padding: '10px', cursor: 'pointer', marginTop: '10px' }}>
+            {loading ? 'Submitting...' : 'Register Account'}
           </button>
         </form>
       </div>
