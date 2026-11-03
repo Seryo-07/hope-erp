@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
 feature/S1-DEV-05-user-management
 
  feature/S1-DEV-04-reset-password
@@ -113,9 +114,9 @@ router.post('/login', async (req, res) => {
                 full_name: appUser.full_name,
                 role: appUser.role?.name || 'User',
                 status: appUser.status,
+                requires_password_change: appUser.status === 'first_login',
 feature/S1-DEV-05-user-management
                 requires_password_change: appUser.status === 'first_login',
-=======
 feature/S1-DEV-04-reset-password
                 requires_password_change: appUser.status === 'first_login',
 

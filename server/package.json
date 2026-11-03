@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@supabase/supabase-auth-helpers": "^1.4.2",
     "@supabase/supabase-js": "^2.118.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
