@@ -87,6 +87,7 @@ export default function App() {
 
     try {
       setRegLoading(true);
+
       const response = await fetch('http://localhost:5000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -312,108 +313,4 @@ export default function App() {
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleRegisterChange}
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(255, 255, 255, 0.1)', color: 'white' }}
-                    required
-                />
-              </div>
-              <button type="submit" disabled={regLoading} className="btn btn-primary" style={{ padding: '12px', marginTop: '8px' }}>
-                {regLoading ? 'Submitting...' : 'Register Account'}
-              </button>
-            </form>
-            <div style={{ marginTop: '20px', textAlign: 'center' }}>
-              <span style={{ color: '#64748B', fontSize: '0.85rem' }}>Already registered? </span>
-              <button onClick={() => setCurrentView('login')} style={{ background: 'none', border: 'none', color: '#6366F1', fontWeight: 700, cursor: 'pointer' }}>
-                Sign In
-              </button>
-            </div>
-          </div>
-        </div>
-    );
-  }
-
-  // -------------------------------------------------------------
-  // RENDER: LANDING PAGE VIEW
-  // -------------------------------------------------------------
-  return (
-      <div style={{ minHeight: '100vh', background: 'var(--bg-dark)' }}>
-        {/* NAVBAR */}
-        <nav className="topbar" style={{ left: 0, padding: '0 3rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 800, fontSize: '1.25rem', color: 'white' }}>
-            <div style={{ width: '36px', height: '36px', background: 'linear-gradient(135deg, #6366F1, #10B981)', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <i className="fa-solid fa-layer-group" style={{ color: 'white' }}></i>
-            </div>
-            Hope, Inc. ERP
-          </div>
-
-          {/* TOP RIGHT NAVIGATION BUTTONS */}
-          <div style={{ display: 'flex', gap: '12px' }}>
-            <button className="btn btn-ghost" onClick={() => setCurrentView('login')}>
-              Sign In
-            </button>
-            <button className="btn btn-primary" onClick={() => setCurrentView('register')}>
-              Register
-            </button>
-          </div>
-        </nav>
-
-        {/* HERO SECTION */}
-        <main style={{ padding: '160px 3rem 80px', maxWidth: '1280px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.1fr 0.9fr', gap: '60px', alignItems: 'center' }}>
-          <div>
-            <h1 style={{ fontSize: '3.5rem', fontWeight: 800, lineHeight: 1.1, letterSpacing: '-0.03em', marginBottom: '1.5rem', color: 'white' }}>
-              Next–Gen Business Intelligence <span style={{ background: 'linear-gradient(135deg, #10B981, #06B6D4, #6366F1)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Unified.</span>
-            </h1>
-            <p style={{ fontSize: '1.1rem', color: '#94A3B8', marginBottom: '2.5rem', maxWidth: '540px', lineHeight: 1.6 }}>
-              Manage Customers, Products, Human Resources, and Real-time Sales Analytics from a high-performance, dark-themed dashboard built for modern teams.
-            </p>
-
-            {/* HERO BUTTONS */}
-            <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <button
-                  className="btn btn-emerald"
-                  style={{ padding: '14px 28px', fontSize: '1rem' }}
-                  onClick={() => setCurrentView('dashboard')}
-              >
-                <i className="fa-solid fa-bolt"></i> Go to Dashboard
-              </button>
-              <button
-                  className="btn btn-ghost"
-                  style={{ padding: '14px 24px' }}
-                  onClick={() => setCurrentView('login')}
-              >
-                Sign In with Email
-              </button>
-            </div>
-          </div>
-
-          {/* HERO MOCKUP PREVIEW */}
-          <div className="table-card" style={{ padding: '24px', border: '1px solid rgba(99, 102, 241, 0.3)', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.7)' }}>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#EF4444' }}></div>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#F59E0B' }}></div>
-              <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10B981' }}></div>
-            </div>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ fontWeight: 700, color: '#94A3B8', fontSize: '0.85rem' }}>DASHBOARD PREVIEW</div>
-              <span className="status-badge status-active">● SYSTEM ONLINE</span>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>TOTAL REVENUE</div>
-                <div style={{ fontSize: '1.3rem', fontWeight: 800, color: '#10B981', marginTop: '4px' }}>$148,920.00</div>
-              </div>
-              <div style={{ background: 'rgba(15, 23, 42, 0.8)', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                <div style={{ fontSize: '0.75rem', color: '#64748B', fontWeight: 600 }}>ACTIVE CLIENTS</div>
-                <div style={{ fontSize: '1.3rem', fontWeight 800, color: '#6366F1', marginTop: '4px' }}>1,240</div>
-              </div>
-            </div>
-
-            <div style={{ height: '120px', background: 'rgba(15, 23, 42, 0.5)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6366F1' }}>
-              <i className="fa-solid fa-chart-line" style={{ fontSize: '2.5rem', margin: 'auto' }}></i>
-            </div>
-          </div>
-        </main>
-      </div>
-  );
-}
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(25
