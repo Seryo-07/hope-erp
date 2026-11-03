@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
+feature/S1-DEV-05-user-management
+
  feature/S1-DEV-04-reset-password
+ main
 const supabase = require('../config/supabaseClient');
 
 router.post('/register', async (req, res) => {
@@ -50,10 +53,13 @@ router.post('/register', async (req, res) => {
     }
 });
 
+ feature/S1-DEV-05-user-management
+
  feature/S1-DEV-03-auth
 const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
  main
 
+main
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -62,9 +68,12 @@ router.post('/login', async (req, res) => {
     }
 
     try {
+ feature/S1-DEV-05-user-management
+
  feature/S1-DEV-04-reset-password
 
 
+ main
  main
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
@@ -104,11 +113,15 @@ router.post('/login', async (req, res) => {
                 full_name: appUser.full_name,
                 role: appUser.role?.name || 'User',
                 status: appUser.status,
+feature/S1-DEV-05-user-management
+                requires_password_change: appUser.status === 'first_login',
+=======
 feature/S1-DEV-04-reset-password
                 requires_password_change: appUser.status === 'first_login',
 
                 requires_password_change: appUser.status === 'first_login', // First-login flag
  main
+main
             },
         });
     } catch (err) {
@@ -124,10 +137,13 @@ router.post('/set-password', async (req, res) => {
     }
 
     try {
+feature/S1-DEV-05-user-management
+
  feature/S1-DEV-04-reset-password
 
 
  main
+main
         const { error: updateAuthError } = await supabase.auth.admin.updateUserById(userId, {
             password: newPassword,
         });
@@ -151,7 +167,9 @@ router.post('/set-password', async (req, res) => {
     }
 });
 
+ feature/S1-DEV-05-user-management
  feature/S1-DEV-04-reset-password
+ main
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
@@ -210,13 +228,7 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-
-router.post('/logout', async (req, res) => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        return res.status(500).json({ error: 'Failed to terminate session.' });
-    }
-    return res.status(200).json({ message: 'Logged out successfully.' });
+ feature/S1-DEV-05-user-management
 
 
 router.post('/logout', async (req, res) => {
@@ -225,6 +237,16 @@ router.post('/logout', async (req, res) => {
         return res.status(500).json({ error: 'Failed to terminate session.' });
     }
     return res.status(200).json({ message: 'Logged out successfully.' });
+
+
+ main
+router.post('/logout', async (req, res) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        return res.status(500).json({ error: 'Failed to terminate session.' });
+    }
+    return res.status(200).json({ message: 'Logged out successfully.' });
+ feature/S1-DEV-05-user-management
 
 const supabase = require('../config/supabase');
 
@@ -275,7 +297,7 @@ router.post('/register', async (req, res) => {
         return res.status(400).json({ error: err.message });
     }
 main
- main
+
 });
 
 module.exports = router;
