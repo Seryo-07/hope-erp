@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
+const permissionsRoutes = require('./routes/permissions');
 const authRoutes = require('./routes/auth'); // Relative sa app.js
  feature/S1-DEV-05-user-management
 
@@ -20,6 +21,7 @@ app.use(express.json());
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/permissions', permissionsRoutes);
 app.use('/api/auth', authRoutes);
 
 app.get('/', (req, res) => {
