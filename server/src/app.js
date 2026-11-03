@@ -2,9 +2,12 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const authRoutes = require('./routes/auth'); // Relative sa app.js
+ feature/S1-DEV-05-user-management
 
 const userRoutes = require('./routes/users');
 app.use('/api/users', userRoutes);
+
+ main
 
 const app = express();
 const PORT = process.env.PORT || 5000;
