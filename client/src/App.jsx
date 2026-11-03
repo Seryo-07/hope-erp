@@ -343,6 +343,7 @@ export default function App() {
                     onChange={handleRegisterChange}
                     style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(25
                     style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(25
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', background: 'rgba(30, 41, 59, 0.6)', border: '1px solid rgba(25
       } catch (parseErr) {
         throw new Error(
             `Server returned non-JSON response (${response.status}): ${text || 'Empty response'}`

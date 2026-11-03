@@ -183,6 +183,7 @@ body {
   border-color: var(--border-color);
 }
 }
+}
 .counter {
   font-size: 16px;
   padding: 5px 10px;
