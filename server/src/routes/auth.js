@@ -1,6 +1,53 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
+const supabase = require('../config/supabaseClient');
+
+router.post('/register', async (req, res) => {
+    let { email, password, full_name } = req.body;
+
+    if (!email || !password || !full_name) {
+        return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    email = email.trim().toLowerCase();
+
+    try {
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: { full_name: full_name },
+        });
+
+        if (authError) throw authError;
+
+        const userId = authData.user?.id;
+        if (!userId) throw new Error('User creation failed.');
+
+        const { error: profileError } = await supabase
+            .from('app_user')
+            .insert([
+                {
+                    id: userId,
+                    full_name: full_name,
+                    email: email,
+                    status: 'pending',
+                },
+            ]);
+
+        if (profileError) {
+            await supabase.auth.admin.deleteUser(userId);
+            throw profileError;
+        }
+
+        return res.status(201).json({
+            message: 'Registration successful! Status set to pending approval.',
+        });
+    } catch (err) {
+        console.error('Registration Error:', err.message);
+        return res.status(400).json({ error: err.message });
+    }
+});
 
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -10,7 +57,6 @@ router.post('/login', async (req, res) => {
     }
 
     try {
-
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -49,7 +95,7 @@ router.post('/login', async (req, res) => {
                 full_name: appUser.full_name,
                 role: appUser.role?.name || 'User',
                 status: appUser.status,
-                requires_password_change: appUser.status === 'first_login', // First-login flag
+                requires_password_change: appUser.status === 'first_login',
             },
         });
     } catch (err) {
@@ -65,7 +111,6 @@ router.post('/set-password', async (req, res) => {
     }
 
     try {
-
         const { error: updateAuthError } = await supabase.auth.admin.updateUserById(userId, {
             password: newPassword,
         });
@@ -86,6 +131,64 @@ router.post('/set-password', async (req, res) => {
         return res.status(200).json({ message: 'Password updated successfully. Account activated.' });
     } catch (err) {
         return res.status(500).json({ error: 'Server error during password update.' });
+    }
+});
+
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+
+    if (!email) {
+        return res.status(400).json({ error: 'Email is required.' });
+    }
+
+    try {
+        const redirectUrl = process.env.CLIENT_URL || 'http://localhost:5173/reset-password';
+
+        const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+            redirectTo: redirectUrl,
+        });
+
+        if (error) {
+            return res.status(400).json({ error: error.message });
+        }
+
+        return res.status(200).json({
+            message: 'Password reset link sent! Check your email inbox.',
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error requesting password reset.' });
+    }
+});
+
+router.post('/reset-password', async (req, res) => {
+    const { newPassword, accessToken } = req.body;
+
+    if (!newPassword) {
+        return res.status(400).json({ error: 'New password is required.' });
+    }
+
+    try {
+        if (accessToken) {
+            const { error: sessionError } = await supabase.auth.setSession({
+                access_token: accessToken,
+                refresh_token: '',
+            });
+            if (sessionError) console.warn('Token session warning:', sessionError.message);
+        }
+
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword,
+        });
+
+        if (updateError) {
+            return res.status(400).json({ error: updateError.message });
+        }
+
+        return res.status(200).json({
+            message: 'Password reset successfully! You can now log in with your new password.',
+        });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error during password reset.' });
     }
 });
 
