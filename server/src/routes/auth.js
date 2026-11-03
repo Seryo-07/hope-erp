@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/supabaseClient');
+const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
 
 router.post('/register', async (req, res) => {
     let { email, password, full_name } = req.body;
