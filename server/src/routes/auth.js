@@ -192,7 +192,6 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
-
 router.post('/logout', async (req, res) => {
     const { error } = await supabase.auth.signOut();
     if (error) {
