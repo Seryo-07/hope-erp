@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+ feature/S1-DEV-04-reset-password
 const supabase = require('../config/supabaseClient');
 
 router.post('/register', async (req, res) => {
@@ -49,6 +50,10 @@ router.post('/register', async (req, res) => {
     }
 });
 
+ feature/S1-DEV-03-auth
+const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
+ main
+
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
@@ -57,6 +62,10 @@ router.post('/login', async (req, res) => {
     }
 
     try {
+ feature/S1-DEV-04-reset-password
+
+
+ main
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
             email,
             password,
@@ -95,7 +104,11 @@ router.post('/login', async (req, res) => {
                 full_name: appUser.full_name,
                 role: appUser.role?.name || 'User',
                 status: appUser.status,
+feature/S1-DEV-04-reset-password
                 requires_password_change: appUser.status === 'first_login',
+
+                requires_password_change: appUser.status === 'first_login', // First-login flag
+ main
             },
         });
     } catch (err) {
@@ -111,6 +124,10 @@ router.post('/set-password', async (req, res) => {
     }
 
     try {
+ feature/S1-DEV-04-reset-password
+
+
+ main
         const { error: updateAuthError } = await supabase.auth.admin.updateUserById(userId, {
             password: newPassword,
         });
@@ -134,6 +151,7 @@ router.post('/set-password', async (req, res) => {
     }
 });
 
+ feature/S1-DEV-04-reset-password
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
@@ -199,6 +217,65 @@ router.post('/logout', async (req, res) => {
         return res.status(500).json({ error: 'Failed to terminate session.' });
     }
     return res.status(200).json({ message: 'Logged out successfully.' });
+
+
+router.post('/logout', async (req, res) => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+        return res.status(500).json({ error: 'Failed to terminate session.' });
+    }
+    return res.status(200).json({ message: 'Logged out successfully.' });
+
+const supabase = require('../config/supabase');
+
+router.post('/register', async (req, res) => {
+    let { email, password, full_name } = req.body;
+
+    if (!email || !password || !full_name) {
+        return res.status(400).json({ error: 'All fields are required.' });
+    }
+
+    email = email.trim().toLowerCase();
+
+    try {
+
+        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+            email: email,
+            password: password,
+            email_confirm: true,
+            user_metadata: { full_name: full_name },
+        });
+
+        if (authError) throw authError;
+
+        const userId = authData.user?.id;
+        if (!userId) throw new Error('User creation failed.');
+
+        const { error: profileError } = await supabase
+            .from('app_user')
+            .insert([
+                {
+                    id: userId,
+                    full_name: full_name,
+                    email: email,
+                    status: 'pending',
+                },
+            ]);
+
+        if (profileError) {
+            await supabase.auth.admin.deleteUser(userId);
+            throw profileError;
+        }
+
+        return res.status(201).json({
+            message: 'Registration successful! Status set to pending approval.',
+        });
+    } catch (err) {
+        console.error('Registration Error:', err.message);
+        return res.status(400).json({ error: err.message });
+    }
+main
+ main
 });
 
 module.exports = router;
