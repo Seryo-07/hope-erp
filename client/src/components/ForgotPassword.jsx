@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-const ForgotPassword = ({ onBackToLogin }) => {
+export default function ForgotPassword({ onNavigate }) {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -8,90 +8,124 @@ const ForgotPassword = ({ onBackToLogin }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('');
         setError('');
-        setLoading(true);
+        setMessage('');
+
+        if (!email) {
+            return setError('Please enter your email address.');
+        }
 
         try {
-            const response = await fetch('/api/auth/forgot-password', {
+            setLoading(true);
+            const response = await fetch('http://localhost:5000/api/auth/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email }),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Failed to send reset link.');
+            const text = await response.text();
+            let data = {};
+            try {
+                data = text ? JSON.parse(text) : {};
+            } catch (err) {
+                throw new Error('Server returned an invalid response format.');
             }
 
-            setMessage('Password reset link sent! Please check your email inbox.');
-            setEmail('');
+            if (!response.ok) {
+                throw new Error(data.error || data.message || 'Failed to send reset link.');
+            }
+
+            setMessage(data.message || 'If an account exists for this email, password reset instructions have been sent.');
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'An error occurred. Please try again.');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-            <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center mb-2">
-                    Forgot Password
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '40px 20px' }}>
+            <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '36px', maxWidth: '440px', width: '100%', boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.05)', border: '1px solid #F1F5F9' }}>
+
+                {/* Mail Header Icon (Clickable to go back to Landing Page) */}
+                <div
+                    onClick={() => onNavigate('landing')}
+                    title="Go back to Home"
+                    style={{
+                        width: '36px',
+                        height: '36px',
+                        background: '#EEF2FF',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '20px',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease'
+                    }}
+                >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+                    Forgot your password?
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                    Enter your email address to receive a password reset link.
+                <p style={{ color: '#64748B', fontSize: '0.88rem', marginBottom: '24px', lineHeight: '1.5' }}>
+                    Enter the email associated with your account. We'll send you a link to reset your password.
                 </p>
 
-                {message && (
-                    <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 text-sm rounded">
-                        {message}
-                    </div>
-                )}
-
                 {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded">
+                    <p style={{ color: '#DC2626', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
                         {error}
-                    </div>
+                    </p>
+                )}
+                {message && (
+                    <p style={{ color: '#059669', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
+                        {message}
+                    </p>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Form */}
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Email Address
+                        <label style={{ display: 'block', color: '#334155', fontSize: '0.88rem', fontWeight: 600, marginBottom: '8px' }}>
+                            Email
                         </label>
                         <input
                             type="email"
-                            required
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            placeholder="user@hope.com"
-                            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="your@email.com"
+                            style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem', color: '#0F172A' }}
+                            required
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition duration-200 disabled:opacity-50"
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#2E2A72', color: '#FFFFFF', border: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer' }}
                     >
-                        {loading ? 'Sending link...' : 'Send Reset Link'}
+                        {loading ? 'Sending link...' : 'Send reset Link'}
                     </button>
                 </form>
 
-                <div className="mt-4 text-center">
-                    <button
-                        type="button"
-                        onClick={onBackToLogin}
-                        className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
-                    >
-                        Back to Login
-                    </button>
-                </div>
+                <p style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '20px', textAlign: 'center', lineHeight: '1.5' }}>
+                    For your security, reset instructions are sent only if the email is associated with an existing account.
+                </p>
             </div>
-        </div>
-    );
-};
 
-export default ForgotPassword;
+            <div style={{ marginTop: '24px', fontSize: '0.9rem' }}>
+                <button
+                    onClick={() => onNavigate('login')}
+                    style={{ background: 'none', border: 'none', color: '#4F46E5', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                >
+                    ← Back to sign in
+                </button>
+            </div>
+        </main>
+    );
+}
