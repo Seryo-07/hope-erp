@@ -1,56 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 
-const ResetPassword = ({ onResetSuccess }) => {
+export default function ResetPassword({ tokens, onNavigate }) {
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [accessToken, setAccessToken] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        // Extract access_token from URL hash fragments (#access_token=...) sent by Supabase email link
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        const token = hashParams.get('access_token');
-        if (token) {
-            setAccessToken(token);
-        }
-    }, []);
-
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('');
         setError('');
-
-        if (newPassword !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
+        setMessage('');
 
         if (newPassword.length < 8) {
-            setError('Password must be at least 8 characters long.');
-            return;
+            return setError('Password must be at least 8 characters long.');
         }
 
-        setLoading(true);
+        if (newPassword !== confirmPassword) {
+            return setError('Passwords do not match.');
+        }
 
         try {
-            const response = await fetch('/api/auth/reset-password', {
+            setLoading(true);
+            const response = await fetch('http://localhost:5000/api/auth/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ newPassword, accessToken }),
+                body: JSON.stringify({
+                    new_password: newPassword,
+                    access_token: tokens?.access_token,
+                    refresh_token: tokens?.refresh_token
+                }),
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || 'Failed to reset password.');
+                throw new Error(data.error || 'Failed to update password.');
             }
 
-            setMessage('Password reset successful! Redirecting to login...');
+            setMessage('Password updated successfully! Redirecting to sign in...');
+
+            // Re-direct sa Sign In page pagkatapos ng 2 segundo
             setTimeout(() => {
-                if (onResetSuccess) onResetSuccess();
+                onNavigate('login');
             }, 2000);
+
         } catch (err) {
             setError(err.message);
         } finally {
@@ -59,67 +53,90 @@ const ResetPassword = ({ onResetSuccess }) => {
     };
 
     return (
-        <div className="flex justify-center items-center min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
-            <div className="w-full max-w-md bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white text-center mb-2">
-                    Set New Password
+        <main style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', backgroundColor: '#F8FAFC', padding: '40px 20px' }}>
+            <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '36px', maxWidth: '440px', width: '100%', boxShadow: '0 4px 20px -2px rgba(0, 0, 0, 0.05)', border: '1px solid #F1F5F9' }}>
+
+                {/* Mail Icon */}
+                <div style={{ width: '36px', height: '36px', background: '#EEF2FF', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px' }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4338CA" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                </div>
+
+                <h2 style={{ fontSize: '1.6rem', fontWeight: 700, color: '#0F172A', marginBottom: '8px', letterSpacing: '-0.5px' }}>
+                    Set a new password
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
-                    Enter your new password below.
+                <p style={{ color: '#64748B', fontSize: '0.88rem', marginBottom: '24px', lineHeight: '1.5' }}>
+                    Choose a strong password that you haven't used before for your HOPE ERP account.
                 </p>
 
+                {error && (
+                    <div style={{ color: '#DC2626', backgroundColor: '#FEF2F2', border: '1px solid #FECACA', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
+                        {error}
+                    </div>
+                )}
                 {message && (
-                    <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 text-sm rounded">
+                    <div style={{ color: '#059669', backgroundColor: '#ECFDF5', border: '1px solid #A7F3D0', padding: '10px', borderRadius: '8px', fontSize: '0.85rem', marginBottom: '16px' }}>
                         {message}
                     </div>
                 )}
 
-                {error && (
-                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 text-sm rounded">
-                        {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        <label style={{ display: 'block', color: '#334155', fontSize: '0.88rem', fontWeight: 600, marginBottom: '6px' }}>
                             New Password
                         </label>
                         <input
                             type="password"
-                            required
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Enter a new password"
+                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem' }}
+                            required
                         />
+                        <span style={{ fontSize: '0.75rem', color: '#94A3B8', marginTop: '4px', display: 'block' }}>
+                            Use at least 8 characters, including a letter and a number.
+                        </span>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Confirm New Password
+                        <label style={{ display: 'block', color: '#334155', fontSize: '0.88rem', fontWeight: 600, marginBottom: '6px' }}>
+                            Confirm Password
                         </label>
                         <input
                             type="password"
-                            required
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="••••••••"
-                            className="w-full px-3 py-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            placeholder="Re-enter your new password"
+                            style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid #E2E8F0', outline: 'none', fontSize: '0.95rem' }}
+                            required
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full py-2 px-4 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md transition duration-200 disabled:opacity-50"
+                        style={{ width: '100%', padding: '12px', borderRadius: '8px', background: '#2E2A72', color: '#FFFFFF', border: 'none', fontWeight: 600, fontSize: '0.95rem', cursor: 'pointer', marginTop: '8px' }}
                     >
-                        {loading ? 'Updating...' : 'Update Password'}
+                        {loading ? 'Updating Password...' : 'Reset Password'}
                     </button>
                 </form>
-            </div>
-        </div>
-    );
-};
 
-export default ResetPassword;
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', fontSize: '0.8rem', color: '#94A3B8', marginTop: '20px' }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    You'll return to sign in after your password is reset.
+                </div>
+            </div>
+
+            <div style={{ marginTop: '24px', fontSize: '0.9rem' }}>
+                <button
+                    onClick={() => onNavigate('login')}
+                    style={{ background: 'none', border: 'none', color: '#4F46E5', fontWeight: 600, cursor: 'pointer' }}
+                >
+                    ← Back to sign in
+                </button>
+            </div>
+        </main>
+    );
+}
