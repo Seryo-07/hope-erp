@@ -1,304 +1,213 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
-feature/S1-DEV-05-user-management
-
- feature/S1-DEV-04-reset-password
- main
 const supabase = require('../config/supabaseClient');
 
-router.post('/register', async (req, res) => {
-    let { email, password, full_name } = req.body;
+// ==========================================
+// 1. AUTHENTICATION ROUTES
+// ==========================================
 
-    if (!email || !password || !full_name) {
-        return res.status(400).json({ error: 'All fields are required.' });
-    }
-
-    email = email.trim().toLowerCase();
-
-    try {
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true,
-            user_metadata: { full_name: full_name },
-        });
-
-        if (authError) throw authError;
-
-        const userId = authData.user?.id;
-        if (!userId) throw new Error('User creation failed.');
-
-        const { error: profileError } = await supabase
-            .from('app_user')
-            .insert([
-                {
-                    id: userId,
-                    full_name: full_name,
-                    email: email,
-                    status: 'pending',
-                },
-            ]);
-
-        if (profileError) {
-            await supabase.auth.admin.deleteUser(userId);
-            throw profileError;
-        }
-
-        return res.status(201).json({
-            message: 'Registration successful! Status set to pending approval.',
-        });
-    } catch (err) {
-        console.error('Registration Error:', err.message);
-        return res.status(400).json({ error: err.message });
-    }
-});
-
- feature/S1-DEV-05-user-management
-
- feature/S1-DEV-03-auth
-const supabase = require('../config/supabaseClient'); // Express Supabase ClientWrapper
- main
-
-main
+// Login Route (With Demo Accounts Bypass)
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password are required.' });
+    // Demo Accounts Bypass Logic
+    const demoAccounts = [
+        'superadmin@hope.com',
+        'ceo@hope.com',
+        'admin@hope.com',
+        'manager@hope.com'
+    ];
+
+    if (email && demoAccounts.includes(email.toLowerCase().trim())) {
+        const isSuperadmin = email.toLowerCase().includes('superadmin') || email.toLowerCase().includes('ceo');
+        const role = isSuperadmin ? 'Superadmin' : 'Admin';
+
+        return res.status(200).json({
+            message: 'Demo login successful',
+            session: {
+                access_token: 'demo-fake-jwt-token',
+                user: {
+                    id: 'demo-user-id',
+                    email: email,
+                    role: role,
+                    full_name: isSuperadmin ? 'Demo Superadmin' : 'Demo Admin'
+                }
+            },
+            user: {
+                email: email,
+                role: role,
+                full_name: isSuperadmin ? 'Demo Superadmin' : 'Demo Admin'
+            }
+        });
     }
 
+    // Real Supabase Auth Logic
     try {
- feature/S1-DEV-05-user-management
-
- feature/S1-DEV-04-reset-password
-
-
- main
- main
-        const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
 
-        if (authError) {
-            return res.status(401).json({ error: authError.message });
-        }
+        if (error) return res.status(400).json({ error: error.message });
 
-        const userId = authData.user.id;
-
-        const { data: appUser, error: userError } = await supabase
-            .from('app_user')
-            .select('*, role(name)')
-            .eq('id', userId)
-            .single();
-
-        if (userError || !appUser) {
-            return res.status(404).json({ error: 'App user profile not found.' });
-        }
-
-        if (appUser.is_blocked || appUser.status === 'blocked') {
-            return res.status(403).json({ error: 'Access denied: Your account has been blocked.' });
-        }
-
-        if (appUser.status === 'pending') {
-            return res.status(403).json({ error: 'Access denied: Your registration is pending admin approval.' });
-        }
-
-        return res.status(200).json({
-            message: 'Login successful',
-            session: authData.session,
-            user: {
-                id: appUser.id,
-                email: appUser.email,
-                full_name: appUser.full_name,
-                role: appUser.role?.name || 'User',
-                status: appUser.status,
-                requires_password_change: appUser.status === 'first_login',
-feature/S1-DEV-05-user-management
-                requires_password_change: appUser.status === 'first_login',
-feature/S1-DEV-04-reset-password
-                requires_password_change: appUser.status === 'first_login',
-
-                requires_password_change: appUser.status === 'first_login', // First-login flag
- main
-main
-            },
-        });
+        return res.status(200).json({ message: 'Login successful', session: data.session, user: data.user });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error during authentication.' });
+        return res.status(500).json({ error: 'Server error during login' });
     }
 });
 
-router.post('/set-password', async (req, res) => {
-    const { userId, newPassword } = req.body;
-
-    if (!userId || !newPassword) {
-        return res.status(400).json({ error: 'User ID and new password are required.' });
-    }
+// Register Route
+router.post('/register', async (req, res) => {
+    const { full_name, email, password } = req.body;
 
     try {
-feature/S1-DEV-05-user-management
-
- feature/S1-DEV-04-reset-password
-
-
- main
-main
-        const { error: updateAuthError } = await supabase.auth.admin.updateUserById(userId, {
-            password: newPassword,
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: {
+                data: { full_name },
+                emailRedirectTo: 'http://localhost:5173',
+            },
         });
 
-        if (updateAuthError) {
-            return res.status(400).json({ error: updateAuthError.message });
-        }
+        if (error) return res.status(400).json({ error: error.message });
 
-        const { error: updateDbError } = await supabase
-            .from('app_user')
-            .update({ status: 'active', updated_at: new Date() })
-            .eq('id', userId);
-
-        if (updateDbError) {
-            return res.status(500).json({ error: 'Failed to update user status.' });
-        }
-
-        return res.status(200).json({ message: 'Password updated successfully. Account activated.' });
+        return res.status(200).json({
+            message: 'Registration successful! Please check your email to confirm your account.',
+            user: data.user
+        });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error during password update.' });
+        return res.status(500).json({ error: 'Server error during registration' });
     }
 });
 
- feature/S1-DEV-05-user-management
- feature/S1-DEV-04-reset-password
- main
+// Request Password Reset Link
 router.post('/forgot-password', async (req, res) => {
     const { email } = req.body;
 
-    if (!email) {
-        return res.status(400).json({ error: 'Email is required.' });
-    }
-
     try {
-        const redirectUrl = process.env.CLIENT_URL || 'http://localhost:5173/reset-password';
-
-        const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-            redirectTo: redirectUrl,
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+            redirectTo: 'http://localhost:5173/reset-password',
         });
 
-        if (error) {
-            return res.status(400).json({ error: error.message });
-        }
+        if (error) return res.status(400).json({ error: error.message });
 
         return res.status(200).json({
-            message: 'Password reset link sent! Check your email inbox.',
+            message: 'Password reset link sent to your email.'
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error requesting password reset.' });
+        return res.status(500).json({ error: 'Server error requesting password reset' });
     }
 });
 
+// Update Password with New Password
 router.post('/reset-password', async (req, res) => {
-    const { newPassword, accessToken } = req.body;
-
-    if (!newPassword) {
-        return res.status(400).json({ error: 'New password is required.' });
-    }
+    const { new_password, access_token, refresh_token } = req.body;
 
     try {
-        if (accessToken) {
-            const { error: sessionError } = await supabase.auth.setSession({
-                access_token: accessToken,
-                refresh_token: '',
+        if (access_token) {
+            await supabase.auth.setSession({
+                access_token,
+                refresh_token: refresh_token || '',
             });
-            if (sessionError) console.warn('Token session warning:', sessionError.message);
         }
 
-        const { error: updateError } = await supabase.auth.updateUser({
-            password: newPassword,
+        const { data, error } = await supabase.auth.updateUser({
+            password: new_password
         });
 
-        if (updateError) {
-            return res.status(400).json({ error: updateError.message });
-        }
+        if (error) return res.status(400).json({ error: error.message });
 
         return res.status(200).json({
-            message: 'Password reset successfully! You can now log in with your new password.',
+            message: 'Password has been reset successfully! You can now log in.',
+            user: data.user
         });
     } catch (err) {
-        return res.status(500).json({ error: 'Server error during password reset.' });
+        return res.status(500).json({ error: 'Server error updating password' });
     }
 });
 
- feature/S1-DEV-05-user-management
+// ==========================================
+// 2. USER MANAGEMENT ROUTES (FOR SUPERADMIN UI)
+// ==========================================
 
+// Get All Users (Para sa Superadmin User Management Table)
+router.get('/users', async (req, res) => {
+    try {
+        const { data, error } = await supabase
+            .from('app_users')
+            .select('*')
+            .order('created_at', { ascending: false });
 
-router.post('/logout', async (req, res) => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        return res.status(500).json({ error: 'Failed to terminate session.' });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json(data);
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error fetching users' });
     }
-    return res.status(200).json({ message: 'Logged out successfully.' });
+});
 
+// Approve User ('Pending' -> 'Active')
+router.patch('/users/:id/approve', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { data, error } = await supabase
+            .from('app_users')
+            .update({ status: 'Active' })
+            .eq('id', id)
+            .select();
 
- main
-router.post('/logout', async (req, res) => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-        return res.status(500).json({ error: 'Failed to terminate session.' });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json({ message: 'User approved successfully', user: data[0] });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error approving user' });
     }
-    return res.status(200).json({ message: 'Logged out successfully.' });
- feature/S1-DEV-05-user-management
+});
 
-const supabase = require('../config/supabase');
+// Block User ('Active' -> 'Blocked')
+router.patch('/users/:id/block', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const { data, error } = await supabase
+            .from('app_users')
+            .update({ status: 'Blocked' })
+            .eq('id', id)
+            .select();
 
-router.post('/register', async (req, res) => {
-    let { email, password, full_name } = req.body;
-
-    if (!email || !password || !full_name) {
-        return res.status(400).json({ error: 'All fields are required.' });
+        if (error) return res.status(400).json({ error: error.message });
+        return res.status(200).json({ message: 'User blocked successfully', user: data[0] });
+    } catch (err) {
+        return res.status(500).json({ error: 'Server error blocking user' });
     }
+});
 
-    email = email.trim().toLowerCase();
+// Update Full User Details (First Name, Last Name, Email, Role, Status)
+router.put('/users/:id', async (req, res) => {
+    const { id } = req.params;
+    const { first_name, last_name, role, status, email } = req.body;
 
     try {
+        const full_name = `${first_name || ''} ${last_name || ''}`.trim();
 
-        const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-            email: email,
-            password: password,
-            email_confirm: true,
-            user_metadata: { full_name: full_name },
-        });
+        const { data, error } = await supabase
+            .from('app_users')
+            .update({
+                full_name: full_name,
+                role: role,
+                status: status,
+                email: email
+            })
+            .eq('id', id)
+            .select();
 
-        if (authError) throw authError;
+        if (error) return res.status(400).json({ error: error.message });
 
-        const userId = authData.user?.id;
-        if (!userId) throw new Error('User creation failed.');
-
-        const { error: profileError } = await supabase
-            .from('app_user')
-            .insert([
-                {
-                    id: userId,
-                    full_name: full_name,
-                    email: email,
-                    status: 'pending',
-                },
-            ]);
-
-        if (profileError) {
-            await supabase.auth.admin.deleteUser(userId);
-            throw profileError;
-        }
-
-        return res.status(201).json({
-            message: 'Registration successful! Status set to pending approval.',
+        return res.status(200).json({
+            message: 'User details updated successfully',
+            user: data[0]
         });
     } catch (err) {
-        console.error('Registration Error:', err.message);
-        return res.status(400).json({ error: err.message });
+        return res.status(500).json({ error: 'Server error updating user details' });
     }
-main
-
 });
 
 module.exports = router;

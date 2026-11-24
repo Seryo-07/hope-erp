@@ -2,108 +2,135 @@ import React from 'react';
 
 export default function AdminDashboard({ onNavigate, user }) {
     const userName = user?.full_name || 'Maria Clara';
-    const userInitials = userName
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase();
+
+    const getInitials = (name) => {
+        const parts = name.trim().split(' ').filter(Boolean);
+        if (parts.length >= 2) {
+            return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+        }
+        return name.slice(0, 2).toUpperCase();
+    };
+
+    const userInitials = getInitials(userName);
 
     return (
-        <div style={{ display: 'flex', minHeight: '100vh', fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#F8FAFC' }}>
+        <div style={{ display: 'flex', minHeight: '100vh', width: '100%', fontFamily: "'Plus Jakarta Sans', sans-serif", background: '#F8FAFC', boxSizing: 'border-box' }}>
 
-            {/* ----------------- SIDEBAR ----------------- */}
-            <aside style={{ width: '260px', background: '#0F172A', color: '#94A3B8', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+            {/* ----------------- SIDEBAR (LOCKED 256px) ----------------- */}
+            <aside style={{ width: '256px', minWidth: '256px', maxWidth: '256px', background: '#0F172A', color: '#94A3B8', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, boxSizing: 'border-box' }}>
                 <div>
-                    {/* Logo Header */}
-                    <div style={{ padding: '24px 20px', borderBottom: '1px solid #1E293B', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div style={{ width: '30px', height: '30px', background: '#312E81', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
+                    {/* Logo Header (LOCKED 64px height) */}
+                    <div style={{ height: '64px', minHeight: '64px', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                            <div style={{ width: '28px', height: '28px', minWidth: '28px', flexShrink: 0, background: '#312E81', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                                     <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
                                     <polyline points="2 17 12 22 22 17"></polyline>
-                                    <polyline points="2 12 12 17 22 12"></polyline>
+                                    <polyline points="2 12 17 22 12"></polyline>
                                 </svg>
                             </div>
-                            <span style={{ fontWeight: 800, fontSize: '1rem', color: '#FFFFFF', letterSpacing: '-0.3px' }}>HOPE, Inc. ERP</span>
+                            <span style={{ fontWeight: 800, fontSize: '0.95rem', color: '#FFFFFF', whiteSpace: 'nowrap' }}>HOPE, Inc. ERP</span>
                         </div>
-                        <button style={{ background: 'none', border: 'none', color: '#64748B', cursor: 'pointer' }}>
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-                        </button>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" style={{ cursor: 'pointer', flexShrink: 0 }}><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                     </div>
 
-                    {/* Workspace Nav */}
-                    <div style={{ padding: '20px 12px 10px 12px' }}>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#475569', letterSpacing: '0.5px', marginBottom: '12px', paddingLeft: '12px' }}>
+                    {/* Nav Links (Matched exact spacing & font sizes) */}
+                    <nav style={{ padding: '20px 12px', fontSize: '0.85rem', boxSizing: 'border-box' }}>
+                        <div style={{ padding: '0 12px 12px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.5px' }}>
                             WORKSPACE
                         </div>
 
-                        <nav style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: '#1E293B', color: '#FFFFFF', border: 'none', fontWeight: 600, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-                                Dashboard
-                            </button>
+                        {/* ACTIVE NAV BOX */}
+                        <div style={{ padding: '10px 12px', background: '#1E293B', borderRadius: '8px', color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            <span>Dashboard</span>
+                        </div>
 
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                                Customers
-                            </button>
+                        <div
+                            onClick={() => onNavigate('customers')}
+                            style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8', marginBottom: '2px' }}
+                        >
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>Customers</span>
+                        </div>
 
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-                                Products
-                            </button>
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8', marginBottom: '2px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 17 22 12"></polyline></svg>
+                            <span>Products</span>
+                        </div>
 
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-                                Human Resources
-                            </button>
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8', marginBottom: '2px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                            <span>Human Resources</span>
+                        </div>
 
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-                                Sales
-                            </button>
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8', marginBottom: '2px' }}>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                            <span>Sales</span>
+                        </div>
 
-                            <button style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                    <span style={{ fontSize: '0.8rem' }}>Reports</span>
-                                </div>
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                            </button>
-                        </nav>
-                    </div>
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#94A3B8', marginBottom: '16px' }}>
+                            <span>Reports</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        </div>
 
-                    {/* Administration Nav */}
-                    <div style={{ padding: '10px 12px 20px 12px' }}>
-                        <div style={{ fontSize: '0.72rem', fontWeight: 800, color: '#475569', letterSpacing: '0.5px', marginBottom: '12px', paddingLeft: '12px' }}>
+                        <div style={{ padding: '8px 12px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.5px' }}>
                             ADMINISTRATION
                         </div>
-                        <button
+
+                        <div
                             onClick={() => onNavigate('user-management')}
-                            style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 12px', borderRadius: '8px', background: 'transparent', color: '#94A3B8', border: 'none', fontWeight: 500, fontSize: '0.88rem', cursor: 'pointer' }}
+                            style={{ padding: '10px 12px', borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', color: '#94A3B8' }}
                         >
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            User Management
-                        </button>
-                    </div>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span>User Management</span>
+                        </div>
+                    </nav>
                 </div>
 
-                {/* User Footer */}
-                <div style={{ padding: '16px', borderTop: '1px solid #1E293B', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ width: '38px', height: '38px', background: '#9333EA', color: '#FFFFFF', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.9rem' }}>
+                {/* Footer Profile (Fixed Purple Avatar Circle) */}
+                <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', boxSizing: 'border-box' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
+                        <div style={{
+                            width: '36px',
+                            height: '36px',
+                            minWidth: '36px',
+                            minHeight: '36px',
+                            flexShrink: 0,
+                            background: '#9333EA',
+                            color: '#FFFFFF',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            fontWeight: 800,
+                            fontSize: '0.82rem',
+                            lineHeight: 1,
+                            letterSpacing: '0px'
+                        }}>
                             {userInitials}
                         </div>
-                        <div>
-                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#FFFFFF' }}>{userName}</div>
-                            <span style={{ fontSize: '0.65rem', fontWeight: 800, background: '#F3E8FF', color: '#7E22CE', padding: '2px 6px', borderRadius: '4px', display: 'inline-block' }}>
-                ADMIN
-              </span>
+                        <div style={{ minWidth: 0 }}>
+                            <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#FFFFFF', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {userName}
+                            </div>
+                            <span style={{
+                                display: 'inline-block',
+                                fontSize: '0.62rem',
+                                fontWeight: 800,
+                                background: '#F3E8FF',
+                                color: '#7E22CE',
+                                padding: '2px 6px',
+                                borderRadius: '4px',
+                                lineHeight: 1.2
+                            }}>
+                                ADMIN
+                            </span>
                         </div>
                     </div>
                     <button
                         onClick={() => onNavigate('landing')}
-                        style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer' }}
+                        style={{ background: 'none', border: 'none', color: '#64748B', fontSize: '0.78rem', cursor: 'pointer', flexShrink: 0, padding: '4px' }}
                     >
                         Logout
                     </button>
@@ -111,26 +138,26 @@ export default function AdminDashboard({ onNavigate, user }) {
             </aside>
 
             {/* ----------------- MAIN CONTENT AREA ----------------- */}
-            <main style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
 
-                {/* Top Header */}
-                <header style={{ height: '64px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <h2 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Dashboard</h2>
-                    <span style={{ fontSize: '0.7rem', fontWeight: 800, background: '#F3E8FF', color: '#7E22CE', padding: '4px 8px', borderRadius: '4px' }}>
-            ADMIN
-          </span>
+                {/* Top Header (LOCKED 64px height) */}
+                <header style={{ height: '64px', minHeight: '64px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
+                    <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Dashboard</h2>
+                    <span style={{ fontSize: '0.68rem', fontWeight: 800, background: '#F3E8FF', color: '#7E22CE', padding: '4px 8px', borderRadius: '4px' }}>
+                        ADMIN
+                    </span>
                 </header>
 
-                {/* Body Content */}
-                <div style={{ padding: '32px', flex: 1 }}>
+                {/* Body Content (Matched padding 32px 40px) */}
+                <div style={{ padding: '32px 40px', flex: 1, width: '100%', boxSizing: 'border-box' }}>
 
                     {/* Welcome Text */}
                     <div style={{ marginBottom: '28px' }}>
-                        <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#0F172A', margin: 0 }}>
-                            Welcome back, Jose!
+                        <h1 style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0F172A', margin: '0 0 4px 0', letterSpacing: '-0.5px' }}>
+                            Welcome back, {userName}!
                         </h1>
-                        <p style={{ color: '#64748B', fontSize: '0.9rem', marginTop: '6px', margin: 0 }}>
-                            You have full system access. You can manage all modules and assign roles to any user.
+                        <p style={{ color: '#94A3B8', fontSize: '0.85rem', margin: 0 }}>
+                            Manage workspace operations, monitor reports, and oversee user access.
                         </p>
                     </div>
 
@@ -173,7 +200,10 @@ export default function AdminDashboard({ onNavigate, user }) {
                         <p style={{ fontSize: '0.85rem', color: '#94A3B8', margin: 0, marginBottom: '20px' }}>Your most-used workspace tasks, one click away.</p>
 
                         <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                            <button style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 20px', fontWeight: 700, fontSize: '0.85rem', color: '#334155', cursor: 'pointer' }}>
+                            <button
+                                onClick={() => onNavigate('customers')}
+                                style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 20px', fontWeight: 700, fontSize: '0.85rem', color: '#334155', cursor: 'pointer' }}
+                            >
                                 👤 View Customers
                             </button>
                             <button style={{ display: 'flex', alignItems: 'center', gap: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '8px', padding: '12px 20px', fontWeight: 700, fontSize: '0.85rem', color: '#334155', cursor: 'pointer' }}>

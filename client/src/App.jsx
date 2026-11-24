@@ -6,16 +6,15 @@ import SignInPage from './components/SignInPage';
 import ForgotPassword from './components/ForgotPassword';
 import Register from './components/Register';
 import ResetPassword from './components/ResetPassword';
+import UserDashboard from './components/UserDashboard';
+import Customers from './components/Customers';
 
 export default function App() {
-    // Navigation State: 'landing' | 'dashboard' | 'user-management' | 'register' | 'login' | 'forgot-password' | 'reset-password'
+    // Navigation State: 'landing' | 'dashboard' | 'customers' | 'user-management' | 'register' | 'login' | 'forgot-password' | 'reset-password'
     const [currentView, setCurrentView] = useState('landing');
-    const [currentUser, setCurrentUser] = useState({ full_name: 'Juan Dela Cruz', role: 'Superadmin' });
+    const [currentUser, setCurrentUser] = useState({ full_name: 'Jose Marie', email: 'superadmin@hope.com', role: 'Superadmin' });
     const [resetTokens, setResetTokens] = useState({ access_token: '', refresh_token: '' });
 
-    // -------------------------------------------------------------
-    // AUTOMATIC RECOVERY LINK DETECTION (SUPABASE PASSWORD RESET)
-    // -------------------------------------------------------------
     useEffect(() => {
         const handleUrlHash = () => {
             const hash = window.location.hash;
@@ -29,7 +28,6 @@ export default function App() {
                         access_token: accessToken,
                         refresh_token: refreshToken || ''
                     });
-                    // Otomatikong ilipat sa Reset Password screen!
                     setCurrentView('reset-password');
                 }
             }
@@ -41,33 +39,35 @@ export default function App() {
     }, []);
 
     // -------------------------------------------------------------
-    // RENDER: DASHBOARD VIEW (SUPERADMIN / ADMIN ROUTING)
+    // RENDER: DASHBOARD VIEW (SUPERADMIN / ADMIN / USER ROUTING)
     // -------------------------------------------------------------
     if (currentView === 'dashboard') {
-        if (currentUser?.role === 'Superadmin') {
+        const role = currentUser?.role?.toLowerCase();
+        if (role === 'superadmin') {
             return <SuperadminDashboard onNavigate={setCurrentView} user={currentUser} />;
         }
-        return <AdminDashboard onNavigate={setCurrentView} user={currentUser} />;
+        if (role === 'admin') {
+            return <AdminDashboard onNavigate={setCurrentView} user={currentUser} />;
+        }
+        return <UserDashboard onNavigate={setCurrentView} user={currentUser} />;
     }
 
     // -------------------------------------------------------------
-    // RENDER: USER MANAGEMENT VIEW
+    // RENDER: CUSTOMERS VIEW (PERMISSION-CHECKED INSIDE COMPONENT)
+    // -------------------------------------------------------------
+    if (currentView === 'customers') {
+        return <Customers onNavigate={setCurrentView} currentUser={currentUser} />;
+    }
+
+    // -------------------------------------------------------------
+    // RENDER: USER MANAGEMENT VIEW (RESTRICTED TO SUPERADMIN & ADMIN)
     // -------------------------------------------------------------
     if (currentView === 'user-management') {
-        return (
-            <div>
-                <div style={{ position: 'fixed', top: '15px', right: '20px', zIndex: 9999 }}>
-                    <button
-                        className="btn btn-ghost"
-                        onClick={() => setCurrentView('dashboard')}
-                        style={{ background: '#0F172A', color: '#94A3B8', border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer', padding: '8px 16px', borderRadius: '6px' }}
-                    >
-                        ← Back to Dashboard
-                    </button>
-                </div>
-                <UserManagement onNavigate={setCurrentView} />
-            </div>
-        );
+        const role = currentUser?.role?.toLowerCase();
+        if (role !== 'superadmin' && role !== 'admin') {
+            return <UserDashboard onNavigate={setCurrentView} user={currentUser} />;
+        }
+        return <UserManagement onNavigate={setCurrentView} currentUser={currentUser} />;
     }
 
     // -------------------------------------------------------------
@@ -213,8 +213,8 @@ export default function App() {
                         </svg>
                     </div>
                     <span style={{ fontWeight: 800, fontSize: '1.1rem', letterSpacing: '-0.3px', color: '#1E1B4B' }}>
-            HOPE, Inc. ERP
-          </span>
+                        HOPE, Inc. ERP
+                    </span>
                 </div>
             </header>
 
@@ -222,8 +222,8 @@ export default function App() {
                 <h1 style={{ fontSize: '3.2rem', fontWeight: 800, color: '#09090B', letterSpacing: '-1.2px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
                     An ERP System Built to
                     <span style={{ background: '#E0E7FF', color: '#3730A3', padding: '4px 24px', borderRadius: '40px', fontWeight: 700 }}>
-            Perform.
-          </span>
+                        Perform.
+                    </span>
                 </h1>
 
                 <p style={{ maxWidth: '640px', color: '#64748B', fontSize: '1.1rem', lineHeight: '1.6', marginBottom: '40px', fontWeight: 400 }}>
