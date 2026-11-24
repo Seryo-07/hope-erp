@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { CustomerFormModal } from './CustomerFormModal';
+import { ConfirmActionModal } from './ConfirmActionModal';
 
 export default function Customers({ onNavigate, currentUser }) {
     const loggedInUser = currentUser || {
@@ -24,7 +25,7 @@ export default function Customers({ onNavigate, currentUser }) {
         { id: 'C-001', name: 'Acme Corporation', address: '123 Main St, Metro City', pay_terms: 'Net 30', status: 'Active', stamp: 'CREATED system 2026-10-01 9:00 AM' },
         { id: 'C-002', name: 'Globex Industries', address: '456 Oak Ave, Harbor Town', pay_terms: 'Net 45', status: 'Active', stamp: 'CREATED system 2026-10-02 10:15 AM' },
         { id: 'C-003', name: 'Initech LLC', address: '789 Pine Rd, Silicon Valley', pay_terms: 'COD', status: 'Active', stamp: 'EDITED user1 2026-10-13 1:01 PM' },
-        { id: 'C-004', name: 'Wayne Enterprises', address: '1007 Mountain Dr, Gotham', pay_terms: 'Net 30', status: 'Inactive', stamp: 'CREATED system 2026-10-05 2:30 PM' },
+        { id: 'C-004', name: 'Wayne Enterprises', address: '1007 Mountain Dr, Gotham', pay_terms: 'Net 30', status: 'Inactive', stamp: 'DELETED system 2026-10-05 2:30 PM' },
         { id: 'C-005', name: 'Stark Enterprises', address: '200 Park Avenue, New York', pay_terms: 'Net 15', status: 'Active', stamp: 'EDITED user1 2026-10-13 1:01 PM' },
     ]);
 
@@ -35,6 +36,14 @@ export default function Customers({ onNavigate, currentUser }) {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [formMode, setFormMode] = useState('create');
     const [editingCustomer, setEditingCustomer] = useState(null);
+
+    // Soft Delete / Restore Modal States
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        actionType: 'delete', // 'delete' | 'restore'
+        customer: null
+    });
+    const [isActionLoading, setIsActionLoading] = useState(false);
 
     useEffect(() => {
         const fetchCustomers = async () => {
@@ -53,7 +62,19 @@ export default function Customers({ onNavigate, currentUser }) {
         if (canView) fetchCustomers();
     }, [canView]);
 
-    // Auto-generate next CUST NO (e.g., C-006)
+    const formatStamp = (actionType) => {
+        const now = new Date();
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        let hours = now.getHours();
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        hours = hours % 12 || 12;
+        const actor = loggedInUser.full_name?.trim().split(' ')[0].toLowerCase() || 'user';
+        return `${actionType} ${actor} ${yyyy}-${mm}-${dd} ${hours}:${minutes} ${ampm}`;
+    };
+
     const getNextCustNo = () => {
         const maxNum = customers.reduce((max, c) => {
             const match = String(c.id).match(/\d+/);
@@ -85,6 +106,45 @@ export default function Customers({ onNavigate, currentUser }) {
         }
     };
 
+    const openSoftDeleteModal = (cust) => {
+        if (!canDelete) return;
+        setConfirmModal({ isOpen: true, actionType: 'delete', customer: cust });
+    };
+
+    const openRestoreModal = (cust) => {
+        if (!canDelete && !canEdit) return;
+        setConfirmModal({ isOpen: true, actionType: 'restore', customer: cust });
+    };
+
+    const handleConfirmStatusAction = async () => {
+        const { actionType, customer } = confirmModal;
+        if (!customer) return;
+
+        setIsActionLoading(true);
+        const isDelete = actionType === 'delete';
+        const nextStatus = isDelete ? 'Inactive' : 'Active';
+        const nextStamp = formatStamp(isDelete ? 'DELETED' : 'RESTORED');
+        const endpoint = isDelete ? 'deactivate' : 'restore';
+
+        try {
+            await fetch(`http://localhost:5000/api/customers/${encodeURIComponent(customer.id)}/${endpoint}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: nextStatus, stamp: nextStamp })
+            });
+        } catch (err) {
+            // Fallback to local state while DB/API is not yet connected
+        } finally {
+            setCustomers(
+                customers.map((c) =>
+                    c.id === customer.id ? { ...c, status: nextStatus, stamp: nextStamp } : c
+                )
+            );
+            setIsActionLoading(false);
+            setConfirmModal({ isOpen: false, actionType: 'delete', customer: null });
+        }
+    };
+
     const activeCount = customers.filter(c => c.status?.toLowerCase() === 'active').length;
     const inactiveCount = customers.filter(c => c.status?.toLowerCase() === 'inactive').length;
     const allCount = customers.length;
@@ -103,13 +163,6 @@ export default function Customers({ onNavigate, currentUser }) {
 
         return matchesTab && matchesSearch;
     });
-
-    const handleDelete = (cust) => {
-        if (!canDelete) return;
-        if (window.confirm(`Delete ${cust.name} (${cust.id})?`)) {
-            setCustomers(customers.filter(c => c.id !== cust.id));
-        }
-    };
 
     const getInitials = (name) => {
         if (!name) return 'JM';
@@ -353,7 +406,7 @@ export default function Customers({ onNavigate, currentUser }) {
                                     {filteredCustomers.map((cust) => {
                                         const isInactive = cust.status?.toLowerCase() === 'inactive';
                                         return (
-                                            <tr key={cust.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                                            <tr key={cust.id} style={{ borderBottom: '1px solid #F1F5F9', background: isInactive ? '#FAFAFA' : '#FFFFFF' }}>
                                                 <td style={{ padding: '16px 20px', fontWeight: 700, color: '#0F172A' }}>{cust.id}</td>
                                                 <td style={{ padding: '16px 20px', color: '#0F172A', fontWeight: 500 }}>{cust.name}</td>
                                                 <td style={{ padding: '16px 20px', color: '#334155' }}>{cust.address}</td>
@@ -381,10 +434,33 @@ export default function Customers({ onNavigate, currentUser }) {
                                                                     Edit
                                                                 </button>
                                                             )}
-                                                            {canDelete && (
-                                                                <button onClick={() => handleDelete(cust)} style={rowActionBtnStyle}>
-                                                                    Delete
-                                                                </button>
+                                                            {isInactive ? (
+                                                                (canDelete || canEdit) && (
+                                                                    <button
+                                                                        onClick={() => openRestoreModal(cust)}
+                                                                        style={{
+                                                                            ...rowActionBtnStyle,
+                                                                            borderColor: '#86EFAC',
+                                                                            background: '#F0FDF4',
+                                                                            color: '#15803D'
+                                                                        }}
+                                                                    >
+                                                                        Restore
+                                                                    </button>
+                                                                )
+                                                            ) : (
+                                                                canDelete && (
+                                                                    <button
+                                                                        onClick={() => openSoftDeleteModal(cust)}
+                                                                        style={{
+                                                                            ...rowActionBtnStyle,
+                                                                            borderColor: '#FECACA',
+                                                                            color: '#B91C1C'
+                                                                        }}
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                )
                                                             )}
                                                         </div>
                                                     </td>
@@ -415,6 +491,16 @@ export default function Customers({ onNavigate, currentUser }) {
                     nextCustNo={getNextCustNo()}
                     currentUserName={loggedInUser.full_name}
                     onSave={handleSaveCustomer}
+                />
+
+                {/* Soft Delete / Restore Confirmation Modal */}
+                <ConfirmActionModal
+                    isOpen={confirmModal.isOpen}
+                    onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                    onConfirm={handleConfirmStatusAction}
+                    actionType={confirmModal.actionType}
+                    customer={confirmModal.customer}
+                    isProcessing={isActionLoading}
                 />
             </main>
         </div>
