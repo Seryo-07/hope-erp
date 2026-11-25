@@ -8,9 +8,11 @@ import Register from './components/Register';
 import ResetPassword from './components/ResetPassword';
 import UserDashboard from './components/UserDashboard';
 import Customers from './components/Customers';
+import Products from './components/Products';
+
 
 export default function App() {
-    // Navigation State: 'landing' | 'dashboard' | 'customers' | 'user-management' | 'register' | 'login' | 'forgot-password' | 'reset-password'
+    // Navigation State: 'landing' | 'dashboard' | 'customers' | 'products' | 'user-management' | 'register' | 'login' | 'forgot-password' | 'reset-password'
     const [currentView, setCurrentView] = useState('landing');
     const [currentUser, setCurrentUser] = useState({ full_name: 'Jose Marie', email: 'superadmin@hope.com', role: 'Superadmin' });
     const [resetTokens, setResetTokens] = useState({ access_token: '', refresh_token: '' });
@@ -57,6 +59,13 @@ export default function App() {
     // -------------------------------------------------------------
     if (currentView === 'customers') {
         return <Customers onNavigate={setCurrentView} currentUser={currentUser} />;
+    }
+
+    // -------------------------------------------------------------
+    // RENDER: PRODUCTS VIEW (PERMISSION-CHECKED INSIDE COMPONENT)
+    // -------------------------------------------------------------
+    if (currentView === 'products') {
+        return <Products onNavigate={setCurrentView} currentUser={currentUser} />;
     }
 
     // -------------------------------------------------------------
