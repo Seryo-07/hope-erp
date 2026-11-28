@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CustomerFormModal } from './CustomerFormModal';
 
 export default function Customers({ onNavigate, currentUser }) {
     const loggedInUser = currentUser || {
@@ -27,6 +28,14 @@ export default function Customers({ onNavigate, currentUser }) {
         { id: 'C-005', name: 'Stark Enterprises', address: '200 Park Avenue, New York', pay_terms: 'Net 15', status: 'Active', stamp: 'EDITED user1 2026-10-13 1:01 PM' },
     ]);
 
+    const [activeTab, setActiveTab] = useState('Active');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Create / Edit Modal States
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [formMode, setFormMode] = useState('create');
+    const [editingCustomer, setEditingCustomer] = useState(null);
+
     const [activeTab, setActiveTab] = useState('Active'); // 'Active' | 'Inactive' | 'All'
     const [searchQuery, setSearchQuery] = useState('');
 
@@ -46,6 +55,38 @@ export default function Customers({ onNavigate, currentUser }) {
         };
         if (canView) fetchCustomers();
     }, [canView]);
+
+    // Auto-generate next CUST NO (e.g., C-006)
+    const getNextCustNo = () => {
+        const maxNum = customers.reduce((max, c) => {
+            const match = String(c.id).match(/\d+/);
+            const num = match ? parseInt(match[0], 10) : 0;
+            return num > max ? num : max;
+        }, 0);
+        return `C-${String(maxNum + 1).padStart(3, '0')}`;
+    };
+
+    const handleOpenCreate = () => {
+        if (!canCreate) return;
+        setFormMode('create');
+        setEditingCustomer(null);
+        setIsFormOpen(true);
+    };
+
+    const handleOpenEdit = (cust) => {
+        if (!canEdit) return;
+        setFormMode('edit');
+        setEditingCustomer(cust);
+        setIsFormOpen(true);
+    };
+
+    const handleSaveCustomer = (savedCustomer, mode) => {
+        if (mode === 'edit') {
+            setCustomers(customers.map((c) => (c.id === savedCustomer.id ? savedCustomer : c)));
+        } else {
+            setCustomers([...customers, savedCustomer]);
+        }
+    };
 
     // Dynamic counts for the segmented tabs
     const activeCount = customers.filter(c => c.status?.toLowerCase() === 'active').length;
@@ -289,6 +330,9 @@ export default function Customers({ onNavigate, currentUser }) {
                                         }}
                                     />
 
+                                    {canCreate && (
+                                        <button
+                                            onClick={handleOpenCreate}
                                     {/* + Add Customer Button (Permission-Checked) */}
                                     {canCreate && (
                                         <button
@@ -353,6 +397,7 @@ export default function Customers({ onNavigate, currentUser }) {
                                                     <td style={{ padding: '16px 20px' }}>
                                                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                             {canEdit && (
+                                                                <button onClick={() => handleOpenEdit(cust)} style={rowActionBtnStyle}>
                                                                 <button onClick={() => alert(`Edit ${cust.name}`)} style={rowActionBtnStyle}>
                                                                     Edit
                                                                 </button>
@@ -381,6 +426,17 @@ export default function Customers({ onNavigate, currentUser }) {
                         </>
                     )}
                 </div>
+
+                {/* Create / Edit Modal */}
+                <CustomerFormModal
+                    isOpen={isFormOpen}
+                    onClose={() => setIsFormOpen(false)}
+                    mode={formMode}
+                    customer={editingCustomer}
+                    nextCustNo={getNextCustNo()}
+                    currentUserName={loggedInUser.full_name}
+                    onSave={handleSaveCustomer}
+                />
             </main>
         </div>
     );
