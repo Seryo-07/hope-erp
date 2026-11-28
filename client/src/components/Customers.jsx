@@ -36,6 +36,9 @@ export default function Customers({ onNavigate, currentUser }) {
     const [formMode, setFormMode] = useState('create');
     const [editingCustomer, setEditingCustomer] = useState(null);
 
+    const [activeTab, setActiveTab] = useState('Active'); // 'Active' | 'Inactive' | 'All'
+    const [searchQuery, setSearchQuery] = useState('');
+
     useEffect(() => {
         const fetchCustomers = async () => {
             try {
@@ -85,10 +88,12 @@ export default function Customers({ onNavigate, currentUser }) {
         }
     };
 
+    // Dynamic counts for the segmented tabs
     const activeCount = customers.filter(c => c.status?.toLowerCase() === 'active').length;
     const inactiveCount = customers.filter(c => c.status?.toLowerCase() === 'inactive').length;
     const allCount = customers.length;
 
+    // Combined Tab + Search Filter
     const filteredCustomers = customers.filter((c) => {
         const matchesTab =
             activeTab === 'All' ||
@@ -134,6 +139,7 @@ export default function Customers({ onNavigate, currentUser }) {
             {/* ----------------- SIDEBAR (LOCKED 256px) ----------------- */}
             <aside style={{ width: '256px', minWidth: '256px', maxWidth: '256px', background: '#0F172A', color: '#94A3B8', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', flexShrink: 0, boxSizing: 'border-box' }}>
                 <div>
+                    {/* Logo Header (LOCKED 64px) */}
                     <div style={{ height: '64px', minHeight: '64px', padding: '0 20px', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
                             <div style={{ width: '28px', height: '28px', minWidth: '28px', flexShrink: 0, background: '#312E81', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -148,6 +154,7 @@ export default function Customers({ onNavigate, currentUser }) {
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2" style={{ cursor: 'pointer', flexShrink: 0 }}><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
                     </div>
 
+                    {/* Nav Links */}
                     <nav style={{ padding: '20px 12px', fontSize: '0.85rem', boxSizing: 'border-box' }}>
                         <div style={{ padding: '0 12px 12px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748B', letterSpacing: '0.5px' }}>WORKSPACE</div>
 
@@ -156,6 +163,7 @@ export default function Customers({ onNavigate, currentUser }) {
                             <span>Dashboard</span>
                         </div>
 
+                        {/* ACTIVE NAV BOX: CUSTOMERS */}
                         <div style={{ padding: '10px 12px', background: '#1E293B', borderRadius: '8px', color: '#FFFFFF', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '2px' }}>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                             <span>Customers</span>
@@ -193,6 +201,7 @@ export default function Customers({ onNavigate, currentUser }) {
                     </nav>
                 </div>
 
+                {/* Footer Profile */}
                 <div style={{ padding: '16px 20px', borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', boxSizing: 'border-box' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0, flex: 1 }}>
                         <div style={{
@@ -239,6 +248,8 @@ export default function Customers({ onNavigate, currentUser }) {
 
             {/* ----------------- MAIN CONTENT AREA ----------------- */}
             <main style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', boxSizing: 'border-box' }}>
+
+                {/* Top Header Bar (LOCKED 64px) */}
                 <header style={{ height: '64px', minHeight: '64px', background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '0 32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', boxSizing: 'border-box' }}>
                     <h2 style={{ fontSize: '1rem', fontWeight: 700, color: '#0F172A', margin: 0 }}>Customers</h2>
                     <span style={{
@@ -253,6 +264,7 @@ export default function Customers({ onNavigate, currentUser }) {
                     </span>
                 </header>
 
+                {/* Body Content (Exact Customer Management Mockup Layout) */}
                 <div style={{ padding: '32px 40px', flex: 1, width: '100%', boxSizing: 'border-box' }}>
                     {!canView ? (
                         <div style={{ background: '#FFFFFF', border: '1px solid #FECACA', borderRadius: '12px', padding: '40px', textAlign: 'center' }}>
@@ -263,12 +275,14 @@ export default function Customers({ onNavigate, currentUser }) {
                         </div>
                     ) : (
                         <>
+                            {/* Top Row: Title on Left | Segmented Tabs + Search + Add Customer on Right */}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' }}>
                                 <h1 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#0F172A', margin: 0, letterSpacing: '-0.3px' }}>
                                     Customer Management
                                 </h1>
 
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                                    {/* Segmented Status Filter Pill */}
                                     <div style={{ display: 'inline-flex', background: '#F1F5F9', padding: '4px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
                                         {[
                                             { key: 'Active', label: `Active (${activeCount})` },
@@ -298,6 +312,7 @@ export default function Customers({ onNavigate, currentUser }) {
                                         })}
                                     </div>
 
+                                    {/* Search Input */}
                                     <input
                                         type="text"
                                         placeholder="Search customers..."
@@ -318,6 +333,10 @@ export default function Customers({ onNavigate, currentUser }) {
                                     {canCreate && (
                                         <button
                                             onClick={handleOpenCreate}
+                                    {/* + Add Customer Button (Permission-Checked) */}
+                                    {canCreate && (
+                                        <button
+                                            onClick={() => alert('Add Customer modal ready for next task')}
                                             style={{
                                                 background: '#1D4ED8',
                                                 color: '#FFFFFF',
@@ -336,6 +355,7 @@ export default function Customers({ onNavigate, currentUser }) {
                                 </div>
                             </div>
 
+                            {/* Table Container */}
                             <div style={{ background: '#FFFFFF', borderRadius: '10px', border: '1px solid #E2E8F0', overflow: 'hidden', width: '100%', boxSizing: 'border-box' }}>
                                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.84rem' }}>
                                     <thead>
@@ -378,6 +398,7 @@ export default function Customers({ onNavigate, currentUser }) {
                                                         <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                                             {canEdit && (
                                                                 <button onClick={() => handleOpenEdit(cust)} style={rowActionBtnStyle}>
+                                                                <button onClick={() => alert(`Edit ${cust.name}`)} style={rowActionBtnStyle}>
                                                                     Edit
                                                                 </button>
                                                             )}
